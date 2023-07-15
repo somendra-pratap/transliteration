@@ -1,20 +1,26 @@
-from flask import Flask
-from flask_cors import CORS
+from flask import Flask, request
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    # Check if the POST request has a file attached
+    if 'file' not in request.files:
+        return 'No file attached', 400
+    
+    file = request.files['file']
+    
+    # Save the file
+    file.save(file.filename)
+    
+    # Read the file contents
+    with open(file.filename, 'r') as f:
+        file_contents = f.read()
+    
+    return file_contents
+
+if __name__ == '__main__':
+    app.run()
 
 
-@app.route('/')
-def index():
-    return "स्वागत है"
-
-
-@app.route('/hi')
-def who():
-    return "तुम कौन हो ?"
-
-
-@app.route('/hi/<username>')
-def greet(username):
-    return "नमस्ते, बड़े भाई!"
+# curl -X POST -F "file=@/path/to/your/file.txt" http://127.0.0.1:5000/upload
